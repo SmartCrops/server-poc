@@ -1,29 +1,64 @@
 package main
 
 import (
-	"server-poc/pkg/db"
-	mobileapi "server-poc/pkg/mobile-api"
-	"server-poc/pkg/mqtt"
-	sensordata "server-poc/pkg/sensor-data"
-
 	"log"
+	"time"
+
+	"server-poc/pkg/datacollector"
+	"server-poc/pkg/mobileapi"
+	"server-poc/pkg/mqtt"
+	"server-poc/pkg/sensordata"
+
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
-func main() {
+const (
+	mqttURL      = "tcp://172.111.242.63:6666"
+	mqttUsername = "roslina"
+	mqttPassword = "smartcrops"
+	dbPath       = "artifacts/baza.db"
+	apiPort      = "8080"
+	restartTime  = time.Second * 2
+)
+
+func run() error {
 	log.Println("Initializing database...")
-	if err := db.Init(); err != nil {
-		log.Fatal(err)
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	if err != nil {
+		return err
 	}
+
+	log.Println("Performing database migrations...")
+	err = db.AutoMigrate(sensordata.SensorData{})
+	if err != nil {
+		return err
+	}
+
 	log.Println("Initializing mqtt...")
-	if err := mqtt.Init(); err != nil {
-		panic(err)
+	mqttClient, err := mqtt.Connect(mqttURL, mqttUsername, mqttPassword)
+	if err != nil {
+		return err
 	}
-	log.Println("Initializing sensordata service...")
-	if err := sensordata.Init(); err != nil {
-		panic(err)
+
+	log.Println("Initializing datacollector service...")
+	if err := datacollector.Start(mqttClient, db); err != nil {
+		return err
 	}
-	log.Println("Running the mobile api...")
-	if err := mobileapi.Run(); err != nil {
-		panic(err)
+
+	log.Println("Running mobile api on port", apiPort)
+	if err := mobileapi.Run(db, apiPort); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func main() {
+	for {
+		err := run()
+		log.Println("Run function exited:", err)
+		log.Println("Scheduling next startup in", restartTime)
+		time.Sleep(restartTime)
 	}
 }

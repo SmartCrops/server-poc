@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"fmt"
+	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 )
@@ -10,52 +11,67 @@ const (
 	brokerUrl = "tcp://172.111.242.63:6666"
 	username  = "roslina"
 	password  = "smartcrops"
+	timeout   = time.Second * 5
 )
 
-type Msg = paho.Message     // Msg received from a topic
-type CallbackFunc func(Msg) // Function called after a message is received
+/* ------------------------------- Public API ------------------------------- */
 
-// Connection to a mqtt broker
-var client paho.Client
+type Msg = paho.Message
+type CallbackFunc = func(Msg)
+type Client interface {
+	Pub(topic string, qos byte, retained bool, payload interface{}) error
+	Sub(topic string, qos byte, cb CallbackFunc) error
+}
 
-// Initialize the mqtt client
-func Init() error {
-	// Set client options
+func Connect(url, username, password string) (Client, error) {
+	// Create options
 	opts := paho.NewClientOptions()
-	opts.AddBroker(brokerUrl)
+	opts.AddBroker(url)
 	opts.Username = username
 	opts.Password = password
 
 	// Create a client
-	client = paho.NewClient(opts)
+	c := internalClient{
+		pahoClient: paho.NewClient(opts),
+	}
 
 	// Connect
-	t := client.Connect()
-	t.Wait()
+	t := c.pahoClient.Connect()
+	if err := waitForPahoToken(t); err != nil {
+		return nil, fmt.Errorf("failed to connect to mqtt broker: %w", err)
+	}
+	return &c, nil
+}
+
+/* -------------------------------- Internals ------------------------------- */
+
+type internalClient struct {
+	pahoClient paho.Client
+}
+
+func waitForPahoToken(t paho.Token) error {
+	finished := t.WaitTimeout(timeout)
+	if !finished {
+		return fmt.Errorf("mqtt timeout")
+	}
 	if t.Error() != nil {
 		return t.Error()
 	}
 	return nil
 }
 
-// Subscribe to a topic
-func Subscribe(topic string, qos byte, cb CallbackFunc) error {
-	t := client.Subscribe(topic, qos, func(c paho.Client, msg paho.Message) {
-		cb(msg)
-	})
-	t.Wait()
-	if t.Error() != nil {
-		return fmt.Errorf("failed to subscribe to mqtt topic: %w", t.Error())
+func (c *internalClient) Pub(topic string, qos byte, retained bool, payload interface{}) error {
+	t := c.pahoClient.Publish(topic, qos, retained, payload)
+	if err := waitForPahoToken(t); err != nil {
+		return fmt.Errorf("failed to publish on topic \"%s\" caused by: %w", topic, err)
 	}
 	return nil
 }
 
-// Publish data on a topic
-func Publish(topic string, qos byte, retained bool, data interface{}) error {
-	t := client.Publish(topic, qos, retained, data)
-	t.Wait()
-	if t.Error() != nil {
-		return fmt.Errorf("failed to send mqtt data: %w", t.Error())
+func (c *internalClient) Sub(topic string, qos byte, cb CallbackFunc) error {
+	t := c.pahoClient.Subscribe(topic, qos, func(c paho.Client, m paho.Message) { cb(m) })
+	if err := waitForPahoToken(t); err != nil {
+		return fmt.Errorf("failed to subscribe to topic \"%s\" caused by: %w", topic, err)
 	}
 	return nil
 }

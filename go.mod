@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/glebarez/sqlite v1.5.0
+	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/chi/v5 v5.0.7
 	gorm.io/gorm v1.24.1
 )
