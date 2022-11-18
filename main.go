@@ -8,6 +8,7 @@ import (
 	"server-poc/pkg/mobileapi"
 	"server-poc/pkg/mqtt"
 	"server-poc/pkg/sensordata"
+	"server-poc/pkg/waterplanner"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -42,10 +43,13 @@ func run() error {
 	}
 
 	log.Println("Initializing datacollector service...")
-	_, err = datacollector.Start(mqttClient, db)
+	datacollectorService, err := datacollector.Start(mqttClient, db)
 	if err != nil {
 		return err
 	}
+
+	log.Println("Initializing waterplanner service...")
+	waterplanner.Start(db, mqttClient, datacollectorService)
 
 	log.Println("Running mobile api on port", apiPort)
 	if err := mobileapi.Run(db, apiPort); err != nil {
