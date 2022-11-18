@@ -42,7 +42,8 @@ func run() error {
 	}
 
 	log.Println("Initializing datacollector service...")
-	if err := datacollector.Start(mqttClient, db); err != nil {
+	_, err = datacollector.Start(mqttClient, db)
+	if err != nil {
 		return err
 	}
 
