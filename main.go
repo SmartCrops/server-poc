@@ -4,11 +4,11 @@ import (
 	"log"
 	"time"
 
-	"server-poc/pkg/datacollector"
 	"server-poc/pkg/mobileapi"
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
-	"server-poc/pkg/waterplanner"
+	"server-poc/pkg/services/datacollector"
+	"server-poc/pkg/services/waterplanner"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"

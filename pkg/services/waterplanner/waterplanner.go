@@ -1,9 +1,9 @@
 package waterplanner
 
 import (
-	"server-poc/pkg/datacollector"
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
+	"server-poc/pkg/services/datacollector"
 
 	"gorm.io/gorm"
 )
