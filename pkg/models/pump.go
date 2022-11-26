@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Pump struct {
 	gorm.Model
-	Gpio    uint
+	Gpio    uint8
 	TankID  uint
 	Sensors []Sensor
 }
