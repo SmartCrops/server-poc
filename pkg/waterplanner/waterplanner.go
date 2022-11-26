@@ -2,8 +2,8 @@ package waterplanner
 
 import (
 	"server-poc/pkg/datacollector"
+	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
-	"server-poc/pkg/sensordata"
 
 	"gorm.io/gorm"
 )
@@ -19,7 +19,7 @@ type service struct {
 	datacollectorService datacollector.Service
 }
 
-func (s *service) handleData(data sensordata.SensorData) {
+func (s *service) handleData(data models.SensorData) {
 	// - Get sensor location from the database
 	// - Call weather api for that location
 	// - Make decision

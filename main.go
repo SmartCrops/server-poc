@@ -6,8 +6,8 @@ import (
 
 	"server-poc/pkg/datacollector"
 	"server-poc/pkg/mobileapi"
+	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
-	"server-poc/pkg/sensordata"
 	"server-poc/pkg/waterplanner"
 
 	"github.com/glebarez/sqlite"
@@ -31,7 +31,7 @@ func run() error {
 	}
 
 	log.Println("Performing database migrations...")
-	err = db.AutoMigrate(sensordata.SensorData{})
+	err = db.AutoMigrate(models.SensorData{})
 	if err != nil {
 		return err
 	}

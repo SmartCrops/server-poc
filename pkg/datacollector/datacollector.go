@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"log"
 
+	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
-	"server-poc/pkg/sensordata"
 
 	"gorm.io/gorm"
 )
 
-type NotificationHandler func(sensordata.SensorData)
+type NotificationHandler func(models.SensorData)
 type Service interface {
 	ListenForNewData(NotificationHandler)
 }
@@ -54,7 +54,7 @@ func (s *service) handleData(msg mqtt.Msg) {
 	}
 
 	// Add data to the database
-	data := sensordata.SensorData{
+	data := models.SensorData{
 		Temperature:   payload.Temp,
 		Pressure:      payload.Pres,
 		LightIntesity: payload.Light,
