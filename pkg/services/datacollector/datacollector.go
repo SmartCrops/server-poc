@@ -40,10 +40,10 @@ func (s *service) ListenForNewData(handler NotificationHandler) {
 
 func (s *service) handleData(msg mqtt.Msg) {
 	type MessagePayload struct {
-		Temp     float64 `json:"temp"`
-		Pres     float64 `json:"pres"`
-		Light    float64 `json:"light"`
-		SensorID int     `json:"sensorId"`
+		SoilHumidity   float64 `json:"soilHumidity"`
+		Temperature    float64 `json:"temperature"`
+		LightIntensity float64 `json:"lightIntensity"`
+		SensorID       int     `json:"sensorId"`
 	}
 
 	// Decode the payload
@@ -55,9 +55,9 @@ func (s *service) handleData(msg mqtt.Msg) {
 
 	// Add data to the database
 	data := models.SensorData{
-		Temperature:   payload.Temp,
-		Pressure:      payload.Pres,
-		LightIntesity: payload.Light,
+		Temperature:   payload.Temperature,
+		SoilHumidity:  payload.SoilHumidity,
+		LightIntesity: payload.LightIntensity,
 		SensorID:      payload.SensorID,
 	}
 	if err := data.Save(s.db); err != nil {

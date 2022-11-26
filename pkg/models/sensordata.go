@@ -4,8 +4,8 @@ import "gorm.io/gorm"
 
 type SensorData struct {
 	gorm.Model
+	SoilHumidity  float64
 	Temperature   float64
-	Pressure      float64
 	LightIntesity float64
 	SensorID      int
 }
