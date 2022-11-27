@@ -13,7 +13,7 @@ const (
 	appid   = "3d5b7e2657ecaa08a9628246422495ff"
 )
 
-func GetAccumulatedRainVolume(hours int, lat float64, lon float64) (float64, error) {
+func GetAccumulatedRainVolume(hours int, lat float64, lon float64) (rainVolumeMillimeters float64, err error) {
 	if hours < 0 || hours > 120 {
 		return 0, errors.New("Weather data available for 0 - 120 hours!")
 	}
@@ -68,7 +68,7 @@ type weather struct {
 			All int `json:"all"`
 		} `json:"clouds"`
 		Wind struct {
-			Speed int     `json:"speed"`
+			Speed float64 `json:"speed"`
 			Deg   int     `json:"deg"`
 			Gust  float64 `json:"gust"`
 		} `json:"wind"`
