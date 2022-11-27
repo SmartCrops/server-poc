@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	baseTopic = "command/"
+	baseTopic = "command"
 	qos       = 2
 	retained  = false
 )
