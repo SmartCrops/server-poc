@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	brokerUrl = "tcp://172.111.242.63:6666"
-	username  = "roslina"
-	password  = "smartcrops"
-	timeout   = time.Second * 5
+	username = "roslina"
+	password = "smartcrops"
+	timeout  = time.Second * 5
 )
 
 /* ------------------------------- Public API ------------------------------- */

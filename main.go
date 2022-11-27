@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	mqttURL      = "tcp://172.111.242.63:6666"
+	mqttURL      = "tcp://192.168.1.15:1883"
 	mqttUsername = "roslina"
 	mqttPassword = "smartcrops"
 	dbPath       = "artifacts/baza.db"

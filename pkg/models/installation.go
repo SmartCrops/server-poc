@@ -4,9 +4,9 @@ import "gorm.io/gorm"
 
 type Installation struct {
 	gorm.Model
-	Name   string `gorm:"unique"`
+	Name   string
 	Lat    float64
-	Long   float64
+	Lon    float64
 	UserID uint
 	Tanks  []Tank
 }
