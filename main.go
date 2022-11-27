@@ -8,7 +8,6 @@ import (
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
 	"server-poc/pkg/services/datacollector"
-	"server-poc/pkg/services/pumpcontroller"
 	"server-poc/pkg/services/waterplanner"
 
 	"github.com/glebarez/sqlite"
@@ -25,7 +24,6 @@ const (
 )
 
 func run() error {
-	/* -------------------------------- Database -------------------------------- */
 	log.Println("Initializing database...")
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
@@ -38,29 +36,21 @@ func run() error {
 		return err
 	}
 
-	/* ------------------------------- MQTT Client ------------------------------ */
 	log.Println("Initializing mqtt...")
 	mqttClient, err := mqtt.Connect(mqttURL, mqttUsername, mqttPassword)
 	if err != nil {
 		return err
 	}
 
-	/* ----------------------------- Data Collector ----------------------------- */
 	log.Println("Initializing datacollector service...")
 	datacollectorService, err := datacollector.Start(mqttClient, db)
 	if err != nil {
 		return err
 	}
 
-	/* ----------------------------- Pump Controller ---------------------------- */
-	log.Println("Initializing pumpcontroller service...")
-	pumpcontrollerService := pumpcontroller.Create(db, mqttClient)
-
-	/* ------------------------------ Water Planner ----------------------------- */
 	log.Println("Initializing waterplanner service...")
-	waterplanner.Start(db, mqttClient, datacollectorService, pumpcontrollerService)
+	waterplanner.Start(db, mqttClient, datacollectorService)
 
-	/* ------------------------------- Mobile Api ------------------------------- */
 	log.Println("Running mobile api on port", apiPort)
 	if err := mobileapi.Run(db, apiPort); err != nil {
 		return err

@@ -2,43 +2,34 @@ package waterplanner
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
 const (
 	baseUrl = "api.openweathermap.org/data/2.5/forecast"
 	appid   = "3d5b7e2657ecaa08a9628246422495ff"
+	lat     = "-34.603722"
+	lon     = "-58.381592"
 )
 
-func GetAccumulatedRainVolume(hours int, lat float64, lon float64) (float64, error) {
-	if hours < 0 || hours > 120 {
-		return 0, errors.New("Weather data available for 0 - 120 hours!")
-	}
-
-	resp, err := http.Get(fmt.Sprintf("https://%s?lat=%f&lon=%f&appid=%s", baseUrl, lat, lon, appid))
+func main() {
+	resp, err := http.Get(fmt.Sprintf("https://%s?lat=%s&lon=%s&appid=%s", baseUrl, lat, lon, appid))
 	if err != nil {
-		return 0, err
+		log.Fatal("Error:", err)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return 0, err
+		log.Fatal(err)
 	}
 
 	m := weather{}
-	err = json.Unmarshal(data, &m)
+	json.Unmarshal(data, &m)
 
-	index := hours / 3
-	accumulatedRainVolume := 0.0
-
-	for i := 0; i < index; i++ {
-		accumulatedRainVolume += m.List[i].Rain.ThreeH
-	}
-
-	return accumulatedRainVolume, nil
+	fmt.Println(m.List[0].Rain.ThreeH) // Rain volume accumulated in last 3 hours (List[1] would be in next 3h etc.)
 }
 
 type weather struct {
