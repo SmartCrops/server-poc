@@ -25,10 +25,10 @@ func Run(db *gorm.DB, port string) error {
 func (s *server) respondJSON(w http.ResponseWriter, data interface{}) {
 	b, err := json.Marshal(data)
 	if err != nil {
-		s.respondErr(w, err, 500)
+		s.respondErr(w, err, http.StatusInternalServerError)
 		return
 	}
-	w.Write(b)
+	_, _ = w.Write(b)
 }
 
 func (s *server) respondErr(w http.ResponseWriter, err error, code int) {

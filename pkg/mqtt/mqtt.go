@@ -2,25 +2,27 @@ package mqtt
 
 import (
 	"fmt"
+	"io"
 	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 )
 
 const (
-	brokerUrl = "tcp://172.111.242.63:6666"
+	brokerURL = "tcp://172.111.242.63:6666"
 	username  = "roslina"
 	password  = "smartcrops"
 	timeout   = time.Second * 5
+	cleanupMS = 250
 )
 
 /* ------------------------------- Public API ------------------------------- */
 
-type Msg = paho.Message
-type CallbackFunc = func(Msg)
+type CallbackFunc = func([]byte)
 type Client interface {
 	Pub(topic string, qos byte, retained bool, payload interface{}) error
 	Sub(topic string, qos byte, cb CallbackFunc) error
+	io.Closer
 }
 
 func Connect(url, username, password string) (Client, error) {
@@ -69,9 +71,16 @@ func (c *internalClient) Pub(topic string, qos byte, retained bool, payload inte
 }
 
 func (c *internalClient) Sub(topic string, qos byte, cb CallbackFunc) error {
-	t := c.pahoClient.Subscribe(topic, qos, func(c paho.Client, m paho.Message) { cb(m) })
+	t := c.pahoClient.Subscribe(topic, qos, func(c paho.Client, m paho.Message) {
+		cb(m.Payload())
+	})
 	if err := waitForPahoToken(t); err != nil {
 		return fmt.Errorf("failed to subscribe to topic \"%s\" caused by: %w", topic, err)
 	}
+	return nil
+}
+
+func (c *internalClient) Close() error {
+	c.pahoClient.Disconnect(cleanupMS)
 	return nil
 }

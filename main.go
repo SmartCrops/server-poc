@@ -41,6 +41,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	defer mqttClient.Close()
 
 	log.Println("Initializing datacollector service...")
 	datacollectorService, err := datacollector.Start(mqttClient, db)
@@ -52,7 +53,7 @@ func run() error {
 	waterplanner.Start(db, mqttClient, datacollectorService)
 
 	log.Println("Running mobile api on port", apiPort)
-	if err := mobileapi.Run(db, apiPort); err != nil {
+	if err = mobileapi.Run(db, apiPort); err != nil {
 		return err
 	}
 

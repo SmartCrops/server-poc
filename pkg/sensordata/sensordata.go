@@ -1,6 +1,8 @@
 package sensordata
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type SensorData struct {
 	gorm.Model
@@ -17,5 +19,5 @@ func GetBySensorID(db *gorm.DB, sensorID int) ([]SensorData, error) {
 }
 
 func (data SensorData) Save(db *gorm.DB) error {
-	return db.Save(data).Error
+	return db.Save(&data).Error
 }

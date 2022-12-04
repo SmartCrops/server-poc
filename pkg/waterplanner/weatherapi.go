@@ -3,33 +3,44 @@ package waterplanner
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"net/http"
 )
 
 const (
-	baseUrl = "api.openweathermap.org/data/2.5/forecast"
+	baseURL = "api.openweathermap.org/data/2.5/forecast"
 	appid   = "3d5b7e2657ecaa08a9628246422495ff"
 	lat     = "-34.603722"
-	lon     = "-58.381592"
+	lng     = "-58.381592"
 )
 
-func main() {
-	resp, err := http.Get(fmt.Sprintf("https://%s?lat=%s&lon=%s&appid=%s", baseUrl, lat, lon, appid))
+func getWeather(lat, lng string) (weather, error) {
+	resp, err := http.Get(fmt.Sprintf("https://%s?lat=%s&lon=%s&appid=%s", baseURL, lat, lng, appid))
 	if err != nil {
-		log.Fatal("Error:", err)
+		return weather{}, fmt.Errorf("failed to call the api: %w", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return weather{}, fmt.Errorf("failed to read the body: %w", err)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
+	w := weather{}
+	if err = json.Unmarshal(data, &w); err != nil {
+		return weather{}, fmt.Errorf("failed to unmarshall the body: %w", err)
 	}
 
-	m := weather{}
-	json.Unmarshal(data, &m)
+	return w, nil
+}
 
-	fmt.Println(m.List[0].Rain.ThreeH) // Rain volume accumulated in last 3 hours (List[1] would be in next 3h etc.)
+func (w weather) willItRainIn24h() bool {
+	for i := 0; i < 8; i++ {
+		if w.List[0].Weather[0].Main == "Rain" {
+			return true
+		}
+	}
+	return false
 }
 
 type weather struct {

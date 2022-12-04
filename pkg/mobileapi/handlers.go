@@ -11,12 +11,12 @@ import (
 func (s *server) handleGetSensorData(w http.ResponseWriter, r *http.Request) {
 	sensorID, err := strconv.ParseInt(chi.URLParam(r, "sensorID"), 10, 64)
 	if err != nil {
-		s.respondErr(w, err, 400)
+		s.respondErr(w, err, http.StatusBadRequest)
 		return
 	}
 	data, err := sensordata.GetBySensorID(s.db, int(sensorID))
 	if err != nil {
-		s.respondErr(w, err, 500)
+		s.respondErr(w, err, http.StatusInternalServerError)
 		return
 	}
 	s.respondJSON(w, data)

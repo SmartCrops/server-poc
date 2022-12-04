@@ -15,7 +15,7 @@ type Service interface {
 	ListenForNewData(NotificationHandler)
 }
 
-// Internal structure for keeping all data and dependencies
+// Internal structure for keeping all data and dependencies.
 type service struct {
 	db         *gorm.DB
 	mqttClient mqtt.Client
@@ -27,7 +27,7 @@ func Start(mqttClient mqtt.Client, db *gorm.DB) (Service, error) {
 		db:         db,
 		mqttClient: mqttClient,
 	}
-	if err := mqttClient.Sub("sensors/*", 1, s.handleData); err != nil {
+	if err := mqttClient.Sub("sensors/#", 1, s.handleData); err != nil {
 		return nil, err
 	}
 	return &s, nil
@@ -38,7 +38,7 @@ func (s *service) ListenForNewData(handler NotificationHandler) {
 	s.observers = append(s.observers, handler)
 }
 
-func (s *service) handleData(msg mqtt.Msg) {
+func (s *service) handleData(msg []byte) {
 	type MessagePayload struct {
 		Temp     float64 `json:"temp"`
 		Pres     float64 `json:"pres"`
@@ -48,7 +48,7 @@ func (s *service) handleData(msg mqtt.Msg) {
 
 	// Decode the payload
 	var payload MessagePayload
-	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {
+	if err := json.Unmarshal(msg, &payload); err != nil {
 		log.Println("Received malformed sensordata:", err)
 		return
 	}
