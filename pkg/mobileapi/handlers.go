@@ -2,7 +2,7 @@ package mobileapi
 
 import (
 	"net/http"
-	"server-poc/pkg/sensordata"
+	"server-poc/pkg/models"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -14,7 +14,7 @@ func (s *server) handleGetSensorData(w http.ResponseWriter, r *http.Request) {
 		s.respondErr(w, err, http.StatusBadRequest)
 		return
 	}
-	data, err := sensordata.GetBySensorID(s.db, int(sensorID))
+	data, err := models.GetBySensorID(s.db, int(sensorID))
 	if err != nil {
 		s.respondErr(w, err, http.StatusInternalServerError)
 		return

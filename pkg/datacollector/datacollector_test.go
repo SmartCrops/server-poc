@@ -2,12 +2,12 @@ package datacollector_test
 
 import (
 	"server-poc/pkg/datacollector"
+	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
-	"server-poc/pkg/sensordata"
+	"server-poc/pkg/testutils"
 	"testing"
 	"time"
 
-	"github.com/glebarez/sqlite"
 	"github.com/matryer/is"
 	"gorm.io/gorm"
 )
@@ -15,10 +15,7 @@ import (
 func setupEnviroment(t *testing.T) (mqtt.Client, mqtt.Broker, *gorm.DB, datacollector.Service) {
 	is := is.New(t)
 	mqttClient, mqttBroker := mqtt.Mock(t)
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	is.NoErr(err) // Database should open
-	err = db.AutoMigrate(&sensordata.SensorData{})
-	is.NoErr(err) // Database should automigrate
+	db := testutils.NewMockDB(t)
 	service, err := datacollector.Start(mqttClient, db)
 	is.NoErr(err) // DataCollector service should start
 	return mqttClient, mqttBroker, db, service
@@ -32,8 +29,8 @@ func TestNotification(t *testing.T) {
 	defer mqttBroker.Close()
 
 	// Create a notification handler
-	notification := make(chan sensordata.SensorData, 1)
-	service.ListenForNewData(func(sd sensordata.SensorData) {
+	notification := make(chan models.SensorData, 1)
+	service.ListenForNewData(func(sd models.SensorData) {
 		notification <- sd
 	})
 
@@ -50,7 +47,7 @@ func TestNotification(t *testing.T) {
 	}
 
 	// Check the database
-	var data sensordata.SensorData
+	var data models.SensorData
 	queryResult := db.First(&data)
 	is.NoErr(queryResult.Error)            // Should query the database for sensordata
 	is.True(queryResult.RowsAffected == 1) // Should find exactly one row
@@ -65,8 +62,8 @@ func TestInvalidData(t *testing.T) {
 	defer mqttBroker.Close()
 
 	// Create a notification handler
-	notification := make(chan sensordata.SensorData, 1)
-	service.ListenForNewData(func(sd sensordata.SensorData) {
+	notification := make(chan models.SensorData, 1)
+	service.ListenForNewData(func(sd models.SensorData) {
 		notification <- sd
 	})
 
@@ -83,7 +80,7 @@ func TestInvalidData(t *testing.T) {
 	}
 
 	// Check the database
-	var data []sensordata.SensorData
+	var data []models.SensorData
 	queryResult := db.Find(&data)
 	is.NoErr(queryResult.Error)            // Should query database for sensordata
 	is.True(queryResult.RowsAffected == 0) // Shouldn't find any rows
