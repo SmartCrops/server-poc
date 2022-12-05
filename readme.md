@@ -5,6 +5,10 @@ To run this service simply run:
 ```bash
 go run .
 ```
+To run all the tests run:
+```bash
+go test ./...
+```
 To push a new container version to docker-hub run:
 ```bash
 docker compose build
