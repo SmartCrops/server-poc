@@ -1,10 +1,10 @@
 package datacollector_test
 
 import (
-	"server-poc/pkg/datacollector"
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
 	"server-poc/pkg/testutils"
+	"server-poc/services/datacollector"
 	"testing"
 	"time"
 
