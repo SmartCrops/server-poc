@@ -51,7 +51,7 @@ func TestNotification(t *testing.T) {
 	queryResult := db.First(&data)
 	is.NoErr(queryResult.Error)            // Should query the database for sensordata
 	is.True(queryResult.RowsAffected == 1) // Should find exactly one row
-	is.True(data.SensorID == 1)            // Data in the database should have correct fields
+	is.True(data.ID == 1)                  // Data in the database should have correct fields
 }
 
 func TestInvalidData(t *testing.T) {

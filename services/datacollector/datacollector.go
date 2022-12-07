@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"log"
 
+	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
-	"server-poc/pkg/sensordata"
 
 	"gorm.io/gorm"
 )
 
-type NotificationHandler func(sensordata.SensorData)
+type NotificationHandler func(models.SensorData)
 type Service interface {
 	ListenForNewData(NotificationHandler)
 }
@@ -40,10 +40,10 @@ func (s *service) ListenForNewData(handler NotificationHandler) {
 
 func (s *service) handleData(msg []byte) {
 	type MessagePayload struct {
-		SoilHumidity   float64 `json:"soilHumidity"`
-		Temperature    float64 `json:"temperature"`
-		LightIntensity float64 `json:"lightIntensity"`
-		SensorID       int     `json:"sensorId"`
+		SoilHumidity              float64 `json:"soilHumidity"`
+		Temperature               float64 `json:"temperature"`
+		LightIntensity            float64 `json:"lightIntensity"`
+		DataCollectorSerialNumber string  `json:"serialNumber"`
 	}
 
 	// Decode the payload
@@ -54,12 +54,14 @@ func (s *service) handleData(msg []byte) {
 	}
 
 	// Add data to the database
-	data := sensordata.SensorData{
-		Temperature:   payload.Temp,
-		Pressure:      payload.Pres,
-		LightIntesity: payload.Light,
-		SensorID:      payload.SensorID,
+
+	data := models.SensorData{
+		SoilHumidity:              payload.SoilHumidity,
+		Temperature:               payload.Temperature,
+		LightIntesity:             payload.LightIntensity,
+		DataCollectorSerialNumber: payload.DataCollectorSerialNumber,
 	}
+
 	if err := data.Save(s.db); err != nil {
 		log.Println("Failed to save sensor data to the database:", err)
 		return

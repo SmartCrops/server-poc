@@ -6,15 +6,16 @@ import (
 
 type SensorData struct {
 	gorm.Model
-	SoilHumidity  float64
-	Temperature   float64
-	LightIntesity float64
-	SensorID      int
+	SoilHumidity              float64
+	Temperature               float64
+	LightIntesity             float64
+	DataCollectorSerialNumber string
+	DataCollector             DataCollector `gorm:"foreignKey:DataCollectorSerialNumber;references:SerialNumber"`
 }
 
-func GetBySensorID(db *gorm.DB, sensorID int) ([]SensorData, error) {
+func GetByDataCollectorSerialNumber(db *gorm.DB, DataCollectorSerialNumber string) ([]SensorData, error) {
 	var data []SensorData
-	err := db.Where(&SensorData{SensorID: sensorID}).Find(&data).Error
+	err := db.Where(&SensorData{DataCollectorSerialNumber: DataCollectorSerialNumber}).Find(&data).Error
 	return data, err
 }
 

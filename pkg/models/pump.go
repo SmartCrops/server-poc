@@ -4,9 +4,10 @@ import "gorm.io/gorm"
 
 type Pump struct {
 	gorm.Model
-	Gpio    uint8
-	TankID  uint
-	Sensors []Sensor
+	SerialNumber     string `gorm:"unique"`
+	PumpControllerID uint
+	Gpio             uint8
+	DataCollectors   []DataCollector
 }
 
 func (pump *Pump) GetByID(db *gorm.DB, id uint) error {

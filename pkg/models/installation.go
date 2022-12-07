@@ -4,11 +4,11 @@ import "gorm.io/gorm"
 
 type Installation struct {
 	gorm.Model
-	Name   string
-	Lat    float64
-	Lon    float64
-	UserID uint
-	Tanks  []Tank
+	Name            string
+	Lat             float64
+	Lon             float64
+	UserID          uint
+	PumpControllers []PumpController
 }
 
 func (installation *Installation) GetByID(db *gorm.DB, id uint) error {

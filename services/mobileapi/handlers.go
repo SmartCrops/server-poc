@@ -3,18 +3,13 @@ package mobileapi
 import (
 	"net/http"
 	"server-poc/pkg/models"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func (s *server) handleGetSensorData(w http.ResponseWriter, r *http.Request) {
-	sensorID, err := strconv.ParseInt(chi.URLParam(r, "sensorID"), 10, 64)
-	if err != nil {
-		s.respondErr(w, err, http.StatusBadRequest)
-		return
-	}
-	data, err := models.GetBySensorID(s.db, int(sensorID))
+	DataCollectorSerialNumber := chi.URLParam(r, "DataCollectorSerialNumber")
+	data, err := models.GetByDataCollectorSerialNumber(s.db, DataCollectorSerialNumber)
 	if err != nil {
 		s.respondErr(w, err, http.StatusInternalServerError)
 		return
