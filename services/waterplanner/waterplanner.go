@@ -4,19 +4,26 @@ import (
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
 	"server-poc/services/datacollector"
+	"server-poc/services/pumpcontroller"
 
 	"gorm.io/gorm"
 )
 
-func Start(db *gorm.DB, mqttClient mqtt.Client, datacollectorService datacollector.Service) {
-	s := service{db, mqttClient, datacollectorService}
+func Start(
+	db *gorm.DB,
+	mqttClient mqtt.Client,
+	datacollectorService datacollector.Service,
+	pumpcontrollerService pumpcontroller.Service,
+) {
+	s := service{db, mqttClient, datacollectorService, pumpcontrollerService}
 	s.datacollectorService.ListenForNewData(s.handleData)
 }
 
 type service struct {
-	db                   *gorm.DB
-	mqttClient           mqtt.Client
-	datacollectorService datacollector.Service
+	db                    *gorm.DB
+	mqttClient            mqtt.Client
+	datacollectorService  datacollector.Service
+	pumpControllerService pumpcontroller.Service
 }
 
 func (s *service) handleData(data models.SensorData) {

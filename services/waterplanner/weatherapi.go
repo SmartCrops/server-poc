@@ -70,7 +70,7 @@ type weather struct {
 			All int `json:"all"`
 		} `json:"clouds"`
 		Wind struct {
-			Speed int     `json:"speed"`
+			Speed float64 `json:"speed"`
 			Deg   int     `json:"deg"`
 			Gust  float64 `json:"gust"`
 		} `json:"wind"`
