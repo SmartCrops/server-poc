@@ -4,10 +4,11 @@ import "gorm.io/gorm"
 
 type Installation struct {
 	gorm.Model
+	UserID          uint
 	Name            string
 	Lat             float64
 	Lon             float64
-	UserID          uint
+	OptimalHumidity float64
 	PumpControllers []PumpController
 }
 
