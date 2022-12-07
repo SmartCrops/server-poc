@@ -34,7 +34,7 @@ func getWeather(lat, lng string) (weather, error) {
 	return w, nil
 }
 
-func (w weather) willItRainIn24h() bool {
+func (w weather) itWillRainIn24h() bool {
 	for i := 0; i < 8; i++ {
 		if w.List[0].Weather[0].Main == "Rain" {
 			return true

@@ -15,10 +15,10 @@ const (
 )
 
 type Service interface {
-	Send(message PumpControllerMessage, destTankSerialNumber string) error
+	Send(command PumpControllerCommand, destTankSerialNumber string) error
 }
 
-type PumpControllerMessage struct {
+type PumpControllerCommand struct {
 	PumpGpio  uint8  `json:"pumpGpio"`
 	DurationS uint16 `json:"durationS"`
 }
@@ -37,8 +37,8 @@ type service struct {
 	mqttClient mqtt.Client
 }
 
-func (s service) Send(msg PumpControllerMessage, destTankSerialNumber string) error {
-	msgJson, err := json.Marshal(msg)
+func (s service) Send(command PumpControllerCommand, destTankSerialNumber string) error {
+	msgJson, err := json.Marshal(command)
 	if err != nil {
 		return err
 	}

@@ -34,12 +34,9 @@ func (s *service) handleData(data models.SensorData) {
 		return
 	}
 	// - Make decision
-	shouldWater := !w.willItRainIn24h()
+	shouldWater := !w.itWillRainIn24h()
 	// - Send command over MQTT
 	if shouldWater {
-		err = s.mqttClient.Pub("controllers/xxx", 1, false, "water")
-		if err != nil {
-			return
-		}
+		s.pumpControllerService.Send(pumpcontroller.PumpControllerCommand{PumpGpio: 0, DurationS: 10}, "69")
 	}
 }
