@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-/* ------------------------------- public API ------------------------------- */
 func Start(
 	db *gorm.DB,
 	mqttClient mqtt.Client,
@@ -112,7 +111,7 @@ func getSqlQueryString(dataCollectorSerialNumber string) string {
 		ON pumps.pump_controller_id=pump_controllers.id
 		JOIN installations
 		ON pump_controllers.installation_id=installations.id
-		WHERE sensor_data.data_collector_serial_number=\"%s\" -- sensor_data.data_collector_serial_number is an input for this command
+		WHERE sensor_data.data_collector_serial_number="%s" -- sensor_data.data_collector_serial_number is an input for this command
 	)
 	SELECT
 		lat,
