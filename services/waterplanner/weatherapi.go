@@ -10,12 +10,10 @@ import (
 const (
 	baseURL = "api.openweathermap.org/data/2.5/forecast"
 	appid   = "3d5b7e2657ecaa08a9628246422495ff"
-	lat     = "-34.603722"
-	lng     = "-58.381592"
 )
 
-func getWeather(lat, lng string) (weather, error) {
-	resp, err := http.Get(fmt.Sprintf("https://%s?lat=%s&lon=%s&appid=%s", baseURL, lat, lng, appid))
+func getWeather(lat float64, lon float64) (weather, error) {
+	resp, err := http.Get(fmt.Sprintf("https://%s?lat=%f&lon=%f&appid=%s", baseURL, lat, lon, appid))
 	if err != nil {
 		return weather{}, fmt.Errorf("failed to call the api: %w", err)
 	}

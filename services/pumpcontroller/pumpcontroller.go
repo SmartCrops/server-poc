@@ -15,7 +15,7 @@ const (
 )
 
 type Service interface {
-	Send(command PumpControllerCommand, destTankSerialNumber string) error
+	Send(command PumpControllerCommand, pumpControllerSerialNumber string) error
 }
 
 type PumpControllerCommand struct {
@@ -37,11 +37,11 @@ type service struct {
 	mqttClient mqtt.Client
 }
 
-func (s service) Send(command PumpControllerCommand, destTankSerialNumber string) error {
+func (s service) Send(command PumpControllerCommand, pumpControllerSerialNumber string) error {
 	msgJson, err := json.Marshal(command)
 	if err != nil {
 		return err
 	}
 
-	return s.mqttClient.Pub(fmt.Sprintf("%s/%s", baseTopic, destTankSerialNumber), qos, retained, msgJson)
+	return s.mqttClient.Pub(fmt.Sprintf("%s/%s", baseTopic, pumpControllerSerialNumber), qos, retained, msgJson)
 }
