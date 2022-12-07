@@ -8,8 +8,8 @@ import (
 )
 
 func (s *server) handleGetSensorData(w http.ResponseWriter, r *http.Request) {
-	DataCollectorSerialNumber := chi.URLParam(r, "DataCollectorSerialNumber")
-	data, err := models.GetByDataCollectorSerialNumber(s.db, DataCollectorSerialNumber)
+	serial := chi.URLParam(r, "serial")
+	data, err := models.GetByDataCollectorSerialNumber(s.db, serial)
 	if err != nil {
 		s.respondErr(w, err, http.StatusInternalServerError)
 		return

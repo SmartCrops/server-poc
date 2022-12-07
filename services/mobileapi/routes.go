@@ -15,6 +15,6 @@ func (s *server) routes() {
 
 	// Auth only endpoints
 	s.r.Group(func(r chi.Router) {
-		s.r.Get("/sensors/{sensorID}/data", s.handleGetSensorData)
+		s.r.Get("/datacollectors/{serial}/data", s.handleGetSensorData)
 	})
 }
