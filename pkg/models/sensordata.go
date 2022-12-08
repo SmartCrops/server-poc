@@ -13,9 +13,9 @@ type SensorData struct {
 	DataCollector             DataCollector `gorm:"foreignKey:DataCollectorSerialNumber;references:SerialNumber"`
 }
 
-func GetByDataCollectorSerialNumber(db *gorm.DB, DataCollectorSerialNumber string) ([]SensorData, error) {
+func GetByDataCollectorSerialNumber(db *gorm.DB, serial string) ([]SensorData, error) {
 	var data []SensorData
-	err := db.Where(&SensorData{DataCollectorSerialNumber: DataCollectorSerialNumber}).Find(&data).Error
+	err := db.Where(&SensorData{DataCollectorSerialNumber: serial}).Find(&data).Error
 	return data, err
 }
 
