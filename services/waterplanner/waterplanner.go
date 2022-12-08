@@ -39,7 +39,6 @@ func (s *service) handleData(data models.SensorData) {
 	if !shouldWater {
 		return
 	}
-
 	// Create and send pump controller command
 	durationS := q.determineWateringDuration()
 	command := pumpcontroller.PumpControllerCommand{

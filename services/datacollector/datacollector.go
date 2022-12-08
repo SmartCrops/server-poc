@@ -54,7 +54,6 @@ func (s *service) handleData(msg []byte) {
 	}
 
 	// Add data to the database
-
 	data := models.SensorData{
 		SoilHumidity:              payload.SoilHumidity,
 		Temperature:               payload.Temperature,

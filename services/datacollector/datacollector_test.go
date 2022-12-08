@@ -35,7 +35,7 @@ func TestNotification(t *testing.T) {
 	})
 
 	// Send new data to the mqtt broker
-	payload := []byte(`{"temp":21.5, "pres":1200.1, "light":123, "sensorId":1}`)
+	payload := []byte(`{"soilHumidity": 66.0, "temperature":21.5, "lightIntensity": 123.0, "serialNumber": "xyz123"}`)
 	err := mqttBroker.Publish("sensors/1", payload, false)
 	is.NoErr(err) // Data should be published on the mqtt broker
 
@@ -51,7 +51,11 @@ func TestNotification(t *testing.T) {
 	queryResult := db.First(&data)
 	is.NoErr(queryResult.Error)            // Should query the database for sensordata
 	is.True(queryResult.RowsAffected == 1) // Should find exactly one row
-	is.True(data.ID == 1)                  // Data in the database should have correct fields
+	// Data in the database should have correct fields
+	is.True(data.SoilHumidity == 66.0)
+	is.True(data.Temperature == 21.5)
+	is.True(data.LightIntesity == 123.0)
+	is.True(data.DataCollectorSerialNumber == "xyz123")
 }
 
 func TestInvalidData(t *testing.T) {
