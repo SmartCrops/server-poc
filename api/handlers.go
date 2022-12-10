@@ -1,4 +1,4 @@
-package mobileapi
+package api
 
 import (
 	"net/http"

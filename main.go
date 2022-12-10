@@ -7,9 +7,9 @@ import (
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
 	"server-poc/services/datacollector"
-	"server-poc/services/mobileapi"
 	"server-poc/services/pumpcontroller"
 	"server-poc/services/waterplanner"
+	"server-poc/services/web"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -20,7 +20,7 @@ const (
 	mqttUsername = "roslina"
 	mqttPassword = "smartcrops"
 	dbPath       = "artifacts/baza.db"
-	apiPort      = "8080"
+	httpPort     = "8080"
 	restartTime  = time.Second * 2
 )
 
@@ -61,9 +61,9 @@ func run() error {
 	log.Println("Initializing waterplanner service...")
 	waterplanner.Start(db, mqttClient, datacollectorService, pumpcontrollerService)
 
-	/* ------------------------------- Mobile Api ------------------------------- */
-	log.Println("Running mobile api on port", apiPort)
-	if err = mobileapi.Run(db, apiPort); err != nil {
+	/* ------------------------------- Web ------------------------------- */
+	log.Println("Running http service on port", httpPort)
+	if err = web.Run(db, httpPort); err != nil {
 		return err
 	}
 
