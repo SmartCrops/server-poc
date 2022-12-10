@@ -2,6 +2,7 @@ from golang:alpine as builder
 workdir /build
 run apk add build-base
 copy . .
+run go generate ./...
 run go build .
 run mkdir /app
 run mv ./server-poc /app/server-poc
