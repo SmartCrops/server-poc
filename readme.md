@@ -1,6 +1,11 @@
 # Server PoC
 
 ## Development
+Before working make sure to generate the frontend files:
+```bash
+go generate ./...
+```
+
 To run this service simply run:
 ```bash
 go run .
