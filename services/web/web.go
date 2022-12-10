@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"server-poc/api"
 	"server-poc/frontend"
@@ -16,9 +17,10 @@ func cors(handler http.Handler) http.Handler {
 	})
 }
 
-func Run(db *gorm.DB, port string) error {
+func Run(db *gorm.DB, port int) error {
 	r := chi.NewRouter()
 	r.Mount("/api", api.New(db))
 	r.Mount("/", cors(frontend.SvelteKitHandler("/")))
-	return http.ListenAndServe(":"+port, r)
+	listenAddr := fmt.Sprintf(":%d", port)
+	return http.ListenAndServe(listenAddr, r)
 }
