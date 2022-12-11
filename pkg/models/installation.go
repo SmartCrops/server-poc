@@ -17,5 +17,5 @@ func (installation *Installation) GetByID(db *gorm.DB, id uint) error {
 }
 
 func (installation Installation) Save(db *gorm.DB) error {
-	return db.Save(installation).Error
+	return db.Save(&installation).Error
 }

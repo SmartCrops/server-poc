@@ -20,6 +20,24 @@ func Start(
 	s.datacollectorService.ListenForNewData(s.handleData)
 }
 
+type WaterPlanningData struct {
+	Lat                        float64
+	Lon                        float64
+	OptimalHumidity            float64
+	PumpControllerSerialNumber string
+	PumpGpio                   uint8
+	SoilHumidityAvg            float64
+}
+
+func GetWaterPlanningData(dataCollectorSerialNumber string, db *gorm.DB) (WaterPlanningData, error) {
+	data := WaterPlanningData{}
+	err := db.Raw(getSqlQueryString(dataCollectorSerialNumber)).Scan(&data).Error
+	if err != nil {
+		return data, err
+	}
+	return data, nil
+}
+
 /* ------------------------- implementation details ------------------------- */
 type service struct {
 	db                    *gorm.DB
@@ -28,28 +46,28 @@ type service struct {
 	pumpControllerService pumpcontroller.Service
 }
 
-func (s *service) handleData(data models.SensorData) {
+func (s *service) handleData(sensorData models.SensorData) {
 	// Get required waterplanning data from db
-	q, err := getQueryData(data.DataCollectorSerialNumber, s.db)
+	data, err := GetWaterPlanningData(sensorData.DataCollectorSerialNumber, s.db)
 	if err != nil {
 		return
 	}
 	// Decide if and for how long to water the crops
-	shouldWater := q.makeDecision()
+	shouldWater := data.makeDecision()
 	if !shouldWater {
 		return
 	}
 	// Create and send pump controller command
-	durationS := q.determineWateringDuration()
+	durationS := data.determineWateringDuration()
 	command := pumpcontroller.PumpControllerCommand{
-		PumpGpio:  q.PumpGpio,
+		PumpGpio:  data.PumpGpio,
 		DurationS: durationS,
 	}
-	s.pumpControllerService.Send(command, q.PumpControllerSerialNumber)
+	s.pumpControllerService.Send(command, data.PumpControllerSerialNumber)
 }
 
 /* ----------------------------- making decision ---------------------------- */
-func (q waterPlanningQuery) makeDecision() bool {
+func (q WaterPlanningData) makeDecision() bool {
 	// Check if crops need more water
 	if q.SoilHumidityAvg > q.OptimalHumidity {
 		return false
@@ -67,30 +85,12 @@ func (q waterPlanningQuery) makeDecision() bool {
 	}
 }
 
-func (q waterPlanningQuery) determineWateringDuration() uint16 {
-	optimalAverageHumDiff := q.OptimalHumidity - q.SoilHumidityAvg
+func (data WaterPlanningData) determineWateringDuration() uint16 {
+	optimalAverageHumDiff := data.OptimalHumidity - data.SoilHumidityAvg
 	return 5 * uint16(optimalAverageHumDiff)
 }
 
-/* --------------------- fetching required data from db --------------------- */
-type waterPlanningQuery struct {
-	Lat                        float64
-	Lon                        float64
-	OptimalHumidity            float64
-	PumpControllerSerialNumber string
-	PumpGpio                   uint8
-	SoilHumidityAvg            float64
-}
-
-func getQueryData(dataCollectorSerialNumber string, db *gorm.DB) (waterPlanningQuery, error) {
-	result := waterPlanningQuery{}
-	err := db.Raw(getSqlQueryString(dataCollectorSerialNumber)).Scan(&result).Error
-	if err != nil {
-		return result, err
-	}
-	return result, nil
-}
-
+/* ------------------ SQL query providing WaterPlanningData ----------------- */
 func getSqlQueryString(dataCollectorSerialNumber string) string {
 	return fmt.Sprintf(`WITH water_planning_query AS (
 		SELECT

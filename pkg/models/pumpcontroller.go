@@ -14,5 +14,5 @@ func (pumpController *PumpController) GetByID(db *gorm.DB, id uint) error {
 }
 
 func (pumpController PumpController) Save(db *gorm.DB) error {
-	return db.Save(pumpController).Error
+	return db.Save(&pumpController).Error
 }

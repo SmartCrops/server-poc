@@ -14,5 +14,5 @@ func (dataCollector *DataCollector) GetByID(db *gorm.DB, id uint) error {
 }
 
 func (dataCollector DataCollector) Save(db *gorm.DB) error {
-	return db.Save(dataCollector).Error
+	return db.Save(&dataCollector).Error
 }
