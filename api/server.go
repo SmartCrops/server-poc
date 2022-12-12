@@ -1,4 +1,4 @@
-package mobileapi
+package api
 
 import (
 	"encoding/json"
@@ -13,13 +13,13 @@ type server struct {
 	r  chi.Router
 }
 
-func Run(db *gorm.DB, port string) error {
+func New(db *gorm.DB) http.Handler {
 	s := &server{
 		db: db,
 		r:  chi.NewRouter(),
 	}
 	s.routes()
-	return http.ListenAndServe(":"+port, s.r)
+	return s
 }
 
 func (s *server) respondJSON(w http.ResponseWriter, data interface{}) {
@@ -38,4 +38,8 @@ func (s *server) respondErr(w http.ResponseWriter, err error, code int) {
 	}
 	r := Response{code, err.Error()}
 	s.respondJSON(w, r)
+}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.r.ServeHTTP(w, r)
 }

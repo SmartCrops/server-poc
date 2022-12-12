@@ -1,4 +1,4 @@
-package mobileapi
+package api
 
 import (
 	"github.com/go-chi/chi/middleware"

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupEnviroment(t *testing.T) (mqtt.Client, mqtt.Broker, *gorm.DB, datacollector.Service) {
+func setupEnviroment(t *testing.T) (mqtt.Client, testutils.MQTTBroker, *gorm.DB, datacollector.Service) {
 	is := is.New(t)
 	mqttClient, mqttBroker := mqtt.Mock(t)
 	db := testutils.NewMockDB(t)
