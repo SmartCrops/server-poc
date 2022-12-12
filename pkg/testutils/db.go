@@ -3,6 +3,7 @@ package testutils
 import (
 	"server-poc/pkg/models"
 	"testing"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"github.com/matryer/is"
@@ -98,7 +99,7 @@ func PopulateMockData(t *testing.T, db *gorm.DB) {
 	}
 	is.NoErr(collector22.Save(db))
 
-	// Create SensorData for datacollector11
+	// Create SensorData (2 controllers x 1 pump x 2 collectors x 2 records == 8 records)
 	data111 := models.SensorData{
 		SoilHumidity:              80.0,
 		Temperature:               21.5,
@@ -129,7 +130,6 @@ func PopulateMockData(t *testing.T, db *gorm.DB) {
 	}
 	is.NoErr(data122.Save(db))
 
-	// Create SensorData for datacollector21
 	data211 := models.SensorData{
 		SoilHumidity:              80.0,
 		Temperature:               21.5,
@@ -137,15 +137,7 @@ func PopulateMockData(t *testing.T, db *gorm.DB) {
 		DataCollectorSerialNumber: "datacollector21",
 	}
 	is.NoErr(data211.Save(db))
-	data212 := models.SensorData{
-		SoilHumidity:              70.0,
-		Temperature:               21.5,
-		LightIntesity:             123.0,
-		DataCollectorSerialNumber: "datacollector21",
-	}
-	is.NoErr(data212.Save(db))
 
-	// Create SensorData for datacollector22
 	data221 := models.SensorData{
 		SoilHumidity:              80.0,
 		Temperature:               21.5,
@@ -153,6 +145,16 @@ func PopulateMockData(t *testing.T, db *gorm.DB) {
 		DataCollectorSerialNumber: "datacollector22",
 	}
 	is.NoErr(data221.Save(db))
+
+	time.Sleep(time.Millisecond)
+	// Latest data for datacollector21
+	data212 := models.SensorData{
+		SoilHumidity:              50.0,
+		Temperature:               21.5,
+		LightIntesity:             123.0,
+		DataCollectorSerialNumber: "datacollector21",
+	}
+	is.NoErr(data212.Save(db))
 	data222 := models.SensorData{
 		SoilHumidity:              70.0,
 		Temperature:               21.5,

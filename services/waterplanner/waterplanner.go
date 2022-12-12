@@ -1,7 +1,6 @@
 package waterplanner
 
 import (
-	"fmt"
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
 	"server-poc/services/datacollector"
@@ -10,6 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
+/* ------------------------------- public API ------------------------------- */
 func Start(
 	db *gorm.DB,
 	mqttClient mqtt.Client,
@@ -29,16 +29,59 @@ type WaterPlanningData struct {
 	SoilHumidityAvg            float64
 }
 
-func GetWaterPlanningData(dataCollectorSerialNumber string, db *gorm.DB) (WaterPlanningData, error) {
-	data := WaterPlanningData{}
-	err := db.Raw(getSqlQueryString(dataCollectorSerialNumber)).Scan(&data).Error
+func GetWaterPlanningData(db *gorm.DB, dataCollectorSerialNumber string) (data WaterPlanningData, err error) {
+	data = WaterPlanningData{}
+	err = nil
+
+	// Get DataCollector
+	collector := models.DataCollector{}
+	err = collector.GetBySerialNumber(db, dataCollectorSerialNumber)
 	if err != nil {
-		return data, err
+		return
 	}
-	return data, nil
+
+	// Get data from the parent Pump
+	pump := models.Pump{}
+	err = pump.GetBySerialNumber(db, collector.PumpSerialNumber)
+	if err != nil {
+		return
+	}
+	data.PumpGpio = pump.Gpio
+
+	// Get data from the parent PumpController
+	controller := models.PumpController{}
+	err = controller.GetBySerialNumber(db, pump.PumpControllerSerialNumber)
+	if err != nil {
+		return
+	}
+	data.PumpControllerSerialNumber = controller.SerialNumber
+
+	// Get data from the parent Installation
+	installation := controller.Installation
+	data.Lat = installation.Lat
+	data.Lon = installation.Lon
+	data.OptimalHumidity = installation.OptimalHumidity
+
+	// Get average soil humidity of latest SensorData of every DataCollector
+	// assigned to the same Pump as a DataCollector identified by the given dataCollectorSerialNumber
+	soilHumidityAvg := 0.0
+	count := 0.0
+	for _, dataCollector := range pump.DataCollectors {
+		sensorData := models.SensorData{}
+		err = sensorData.GetLatest(db, dataCollector.SerialNumber)
+		if err != nil {
+			return
+		}
+		soilHumidityAvg += sensorData.SoilHumidity
+		count++
+	}
+	soilHumidityAvg /= count
+	data.SoilHumidityAvg = soilHumidityAvg
+
+	return
 }
 
-/* ------------------------- implementation details ------------------------- */
+/* ------------------------- service implementation ------------------------- */
 type service struct {
 	db                    *gorm.DB
 	mqttClient            mqtt.Client
@@ -48,7 +91,7 @@ type service struct {
 
 func (s *service) handleData(sensorData models.SensorData) {
 	// Get required waterplanning data from db
-	data, err := GetWaterPlanningData(sensorData.DataCollectorSerialNumber, s.db)
+	data, err := GetWaterPlanningData(s.db, sensorData.DataCollectorSerialNumber)
 	if err != nil {
 		return
 	}
@@ -88,37 +131,4 @@ func (q WaterPlanningData) makeDecision() bool {
 func (data WaterPlanningData) determineWateringDuration() uint16 {
 	optimalAverageHumDiff := data.OptimalHumidity - data.SoilHumidityAvg
 	return 5 * uint16(optimalAverageHumDiff)
-}
-
-/* ------------------ SQL query providing WaterPlanningData ----------------- */
-func getSqlQueryString(dataCollectorSerialNumber string) string {
-	return fmt.Sprintf(`WITH water_planning_query AS (
-		SELECT
-			installations.lat AS lat,
-			installations.lon AS lon,
-			installations.optimal_humidity AS optimal_humidity,
-			pump_controllers.serial_number AS pump_controller_serial_number,
-			pumps.gpio AS pump_gpio,
-			AVG(sensor_data.soil_humidity) AS soil_humidity_avg,
-			row_number() OVER(PARTITION BY sensor_data.data_collector_serial_number ORDER BY sensor_data.created_at DESC) AS sensor_data_latest_record_time_index
-		FROM sensor_data
-		JOIN data_collectors 
-		ON sensor_data.data_collector_serial_number=data_collectors.serial_number
-		JOIN pumps
-		ON data_collectors.pump_id=pumps.id
-		JOIN pump_controllers
-		ON pumps.pump_controller_id=pump_controllers.id
-		JOIN installations
-		ON pump_controllers.installation_id=installations.id
-		WHERE sensor_data.data_collector_serial_number="%s" -- sensor_data.data_collector_serial_number is an input for this command
-	)
-	SELECT
-		lat,
-		lon,
-		optimal_humidity,
-		pump_controller_serial_number,
-		pump_gpio,
-		soil_humidity_avg
-	FROM water_planning_query
-	WHERE sensor_data_latest_record_time_index = 1;`, dataCollectorSerialNumber)
 }

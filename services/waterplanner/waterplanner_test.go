@@ -17,29 +17,24 @@ func setupEnviroment(t *testing.T) *gorm.DB {
 	return db
 }
 
-func TestWaterPlanningQuery(t *testing.T) {
+func TestGetWaterPlanningData(t *testing.T) {
 	// Setup
 	is := is.New(t)
 	db := setupEnviroment(t)
 
-	oldData, err := waterplanner.GetWaterPlanningData("datacollector1", db)
-	log.Println(oldData, "brooo")
-	is.NoErr(err)
-	is.Equal(oldData.SoilHumidityAvg, oldData.OptimalHumidity)
+	sensorData := models.SensorData{}
+	db.Last(&sensorData)
+	log.Println("Last SensorData:", sensorData)
 
-	newSensorData := models.SensorData{
-		SoilHumidity:              30.0,
-		Temperature:               21.5,
-		LightIntesity:             123.0,
-		DataCollectorSerialNumber: "datacollector2",
-	}
-
-	newData, err := waterplanner.GetWaterPlanningData(newSensorData.DataCollectorSerialNumber, db)
+	data, err := waterplanner.GetWaterPlanningData(db, sensorData.DataCollectorSerialNumber)
 	is.NoErr(err)
-	is.Equal(newData.Lat, 150.0)
-	is.Equal(newData.Lon, 120.0)
-	is.Equal(newData.OptimalHumidity, 60.0)
-	is.Equal(newData.PumpControllerSerialNumber, "pumpcontroller1")
-	is.Equal(newData.PumpGpio, 0)
-	is.Equal(newData.SoilHumidityAvg, (50.0+30.0)/2) // newSensorData updates avgHum from (50.0 + 70.0)/2 to (50.0+30.0)/2
+
+	log.Println("Data:", data)
+
+	is.Equal(data.Lat, 140.0)
+	is.Equal(data.Lon, 120.0)
+	is.Equal(data.OptimalHumidity, 50.0)
+	is.Equal(data.PumpControllerSerialNumber, "pumpcontroller2")
+	is.Equal(data.PumpGpio, uint8(0))
+	is.Equal(data.SoilHumidityAvg, 60.0)
 }

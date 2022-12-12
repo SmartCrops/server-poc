@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type PumpController struct {
 	SerialNumber   string `gorm:"primaryKey"`
 	InstallationID uint
+	Installation   Installation
 	Pumps          []Pump
 }
 
@@ -15,5 +16,5 @@ func (pumpController PumpController) Save(db *gorm.DB) error {
 
 // Get PumpController with its pumps
 func (pumpController *PumpController) GetBySerialNumber(db *gorm.DB, serialNumber string) error {
-	return db.Model(&PumpController{}).Preload("Pumps").First(pumpController, serialNumber).Error
+	return db.Model(&PumpController{}).Preload("Installation").Preload("Pumps").First(pumpController, "serial_number == ?", serialNumber).Error
 }

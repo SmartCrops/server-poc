@@ -24,5 +24,5 @@ func (sensorData SensorData) Save(db *gorm.DB) error {
 
 // Get Latest SensorData by DataCollector Serial Number
 func (sensorData *SensorData) GetLatest(db *gorm.DB, dataCollectorSerialNumber string) error {
-	return db.Order("data_collector_serial_number, created_at asc").Where("data_collector_serial_number == ?", dataCollectorSerialNumber).Last(sensorData).Error
+	return db.Order("created_at desc").Where("data_collector_serial_number == ?", dataCollectorSerialNumber).First(sensorData).Error
 }

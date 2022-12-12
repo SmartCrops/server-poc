@@ -17,5 +17,5 @@ func (pump Pump) Save(db *gorm.DB) error {
 
 // Get Pump with its DataCollectors and its PumpController
 func (pump *Pump) GetBySerialNumber(db *gorm.DB, serialNumber string) error {
-	return db.Model(&Pump{}).Preload("PumpController", "DataCollectors").Where("serial_number == ?", serialNumber).First(pump).Error
+	return db.Model(&Pump{}).Preload("PumpController").Preload("DataCollectors").Where("serial_number == ?", serialNumber).First(pump).Error
 }
