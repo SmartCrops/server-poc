@@ -146,8 +146,7 @@ func PopulateMockData(t *testing.T, db *gorm.DB) {
 	}
 	is.NoErr(data221.Save(db))
 
-	time.Sleep(time.Millisecond)
-	// Latest data for datacollector21
+	time.Sleep(time.Millisecond) // Make sure following records are inserted last for testing
 	data212 := models.SensorData{
 		SoilHumidity:              50.0,
 		Temperature:               21.5,
