@@ -3,16 +3,17 @@ package models
 import "gorm.io/gorm"
 
 type DataCollector struct {
-	gorm.Model
-	PumpID       uint
-	SerialNumber string       `gorm:"unique"`
-	SensorData   []SensorData `gorm:"foreignKey:DataCollectorSerialNumber;references:SerialNumber"`
+	SerialNumber     string `gorm:"primaryKey"`
+	PumpSerialNumber string
+	Pump             Pump `gorm:"foreignKey:PumpSerialNumber;references:SerialNumber"`
 }
 
-func (dataCollector *DataCollector) GetByID(db *gorm.DB, id uint) error {
-	return db.First(dataCollector, id).Error
-}
-
+// Create or update DataCollector
 func (dataCollector DataCollector) Save(db *gorm.DB) error {
 	return db.Save(&dataCollector).Error
+}
+
+// Get DataCollector with its Pump
+func (dataCollector *DataCollector) GetBySerialNumber(db *gorm.DB, serialNumber string) error {
+	return db.Model(&dataCollector).Preload("Pump").Where("serial_number == ?", serialNumber).First(dataCollector).Error
 }

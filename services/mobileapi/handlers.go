@@ -3,18 +3,24 @@ package mobileapi
 import (
 	"net/http"
 	"server-poc/pkg/models"
+	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 )
 
-func (s *server) handleGetSensorData(w http.ResponseWriter, r *http.Request) {
-	serial := chi.URLParam(r, "serial")
-	data, err := models.GetByDataCollectorSerialNumber(s.db, serial)
+func (s *server) handleGetUserInstallations(w http.ResponseWriter, r *http.Request) {
+	userId, err := strconv.ParseUint(chi.URLParam(r, "userId"), 10, 64)
+	if err != nil {
+		s.respondErr(w, err, http.StatusBadRequest)
+		return
+	}
+	user := models.User{}
+	err = user.GetByID(s.db, uint(userId))
 	if err != nil {
 		s.respondErr(w, err, http.StatusInternalServerError)
 		return
 	}
-	s.respondJSON(w, data)
+	s.respondJSON(w, user.Installations)
 }
 
 func (s *server) handleIndex(w http.ResponseWriter, r *http.Request) {

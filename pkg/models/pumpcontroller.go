@@ -3,16 +3,17 @@ package models
 import "gorm.io/gorm"
 
 type PumpController struct {
-	gorm.Model
-	SerialNumber   string `gorm:"unique"`
+	SerialNumber   string `gorm:"primaryKey"`
 	InstallationID uint
 	Pumps          []Pump
 }
 
-func (pumpController *PumpController) GetByID(db *gorm.DB, id uint) error {
-	return db.First(pumpController, id).Error
-}
-
+// Create or update PumpController
 func (pumpController PumpController) Save(db *gorm.DB) error {
 	return db.Save(&pumpController).Error
+}
+
+// Get PumpController with its pumps
+func (pumpController *PumpController) GetBySerialNumber(db *gorm.DB, serialNumber string) error {
+	return db.Model(&PumpController{}).Preload("Pumps").First(pumpController, serialNumber).Error
 }

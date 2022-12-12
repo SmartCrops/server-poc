@@ -1,24 +1,28 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
 type SensorData struct {
-	gorm.Model
+	ID                        uint
 	SoilHumidity              float64
 	Temperature               float64
 	LightIntesity             float64
-	DataCollectorSerialNumber string
+	CreatedAt                 time.Time     `gorm:"index:idx_member,priority:1"`
+	DataCollectorSerialNumber string        `gorm:"index:idx_member,priority:2"`
 	DataCollector             DataCollector `gorm:"foreignKey:DataCollectorSerialNumber;references:SerialNumber"`
 }
 
-func GetByDataCollectorSerialNumber(db *gorm.DB, serial string) ([]SensorData, error) {
-	var data []SensorData
-	err := db.Where(&SensorData{DataCollectorSerialNumber: serial}).Find(&data).Error
-	return data, err
+// Create SensorData
+func (sensorData SensorData) Save(db *gorm.DB) error {
+	sensorData.CreatedAt = time.Now()
+	return db.Create(&sensorData).Error
 }
 
-func (data SensorData) Save(db *gorm.DB) error {
-	return db.Save(&data).Error
+// Get Latest SensorData by DataCollector Serial Number
+func (sensorData *SensorData) GetLatest(db *gorm.DB, dataCollectorSerialNumber string) error {
+	return db.Order("data_collector_serial_number, created_at asc").Where("data_collector_serial_number == ?", dataCollectorSerialNumber).Last(sensorData).Error
 }
