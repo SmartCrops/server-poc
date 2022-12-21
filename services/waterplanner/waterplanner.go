@@ -1,6 +1,7 @@
 package waterplanner
 
 import (
+	"log"
 	"server-poc/pkg/models"
 	"server-poc/pkg/mqtt"
 	"server-poc/services/datacollector"
@@ -56,11 +57,11 @@ func GetWaterPlanningData(db *gorm.DB, dataCollectorSerialNumber string) (data W
 	}
 	data.PumpControllerSerialNumber = controller.SerialNumber
 
-	// Get data from the parent Installation
-	installation := controller.Installation
-	data.Lat = installation.Lat
-	data.Lon = installation.Lon
-	data.OptimalHumidity = installation.OptimalHumidity
+	// Get data from the parent Field
+	field := controller.Field
+	data.Lat = field.Lat
+	data.Lon = field.Lon
+	data.OptimalHumidity = field.OptimalHumidity
 
 	// Get average soil humidity of latest SensorData of every DataCollector
 	// assigned to the same Pump as a DataCollector identified by the given dataCollectorSerialNumber
@@ -93,6 +94,7 @@ func (s *service) handleData(sensorData models.SensorData) {
 	// Get required waterplanning data from db
 	data, err := GetWaterPlanningData(s.db, sensorData.DataCollectorSerialNumber)
 	if err != nil {
+		log.Println("Error fetching water planning query data:", err)
 		return
 	}
 	// Decide if and for how long to water the crops
@@ -102,6 +104,9 @@ func (s *service) handleData(sensorData models.SensorData) {
 	}
 	// Create and send pump controller command
 	durationS := data.determineWateringDuration()
+	if durationS == 0 {
+		return
+	}
 	command := pumpcontroller.PumpControllerCommand{
 		PumpGpio:  data.PumpGpio,
 		DurationS: durationS,
@@ -130,5 +135,8 @@ func (q WaterPlanningData) makeDecision() bool {
 
 func (data WaterPlanningData) determineWateringDuration() uint16 {
 	optimalAverageHumDiff := data.OptimalHumidity - data.SoilHumidityAvg
+	if optimalAverageHumDiff <= 0 {
+		return 0
+	}
 	return 5 * uint16(optimalAverageHumDiff)
 }

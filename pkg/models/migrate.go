@@ -8,6 +8,7 @@ func MigrateAll(db *gorm.DB) error {
 		&DataCollector{},
 		&Pump{},
 		&PumpController{},
+		&Field{},
 		&Installation{},
 		&User{},
 	)

@@ -24,39 +24,49 @@ func PopulateMockData(t *testing.T, db *gorm.DB) {
 
 	// Create User Frank
 	user := models.User{
+		ID:           1,
 		Username:     "Frank",
 		PasswordHash: "xyz123",
 	}
 	is.NoErr(user.Save(db))
 
-	// Create 2 installations for user Frank
-	installation1 := models.Installation{
+	//Create Installation
+	installation := models.Installation{
+		ID:   1,
+		Name: "System Franka",
+	}
+	installation.Save(db, 1)
+
+	// Create 2 fields for user Frank
+	field1 := models.Field{
+		ID:              1,
 		Name:            "Pole kapusty",
 		Lat:             150.0,
 		Lon:             120.0,
 		OptimalHumidity: 60.0,
-		UserID:          1,
+		InstallationID:  1,
 	}
-	is.NoErr(installation1.Save(db))
+	is.NoErr(field1.Save(db))
 
-	installation2 := models.Installation{
+	field2 := models.Field{
+		ID:              2,
 		Name:            "Pole ziemniaków",
 		Lat:             140.0,
 		Lon:             120.0,
 		OptimalHumidity: 50.0,
-		UserID:          1,
+		InstallationID:  1,
 	}
-	is.NoErr(installation2.Save(db))
+	is.NoErr(field2.Save(db))
 
-	// Create PumpController for every Installation
+	// Create PumpController for every Field
 	pumpController1 := models.PumpController{
-		SerialNumber:   "pumpcontroller1",
-		InstallationID: 1,
+		SerialNumber: "pumpcontroller1",
+		FieldID:      1,
 	}
 	is.NoErr(pumpController1.Save(db))
 	pumpController2 := models.PumpController{
-		SerialNumber:   "pumpcontroller2",
-		InstallationID: 2,
+		SerialNumber: "pumpcontroller2",
+		FieldID:      2,
 	}
 	is.NoErr(pumpController2.Save(db))
 

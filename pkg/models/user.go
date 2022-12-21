@@ -16,5 +16,5 @@ func (user User) Save(db *gorm.DB) error {
 
 // Get User with its Installations by UserID
 func (user *User) GetByID(db *gorm.DB, userId uint) error {
-	return db.Model(&User{}).Preload("Installations").Find(user).Error
+	return db.Model(&User{}).Where("id == ?", userId).First(user).Error
 }

@@ -3,21 +3,28 @@ package models
 import "gorm.io/gorm"
 
 type Installation struct {
-	ID              uint
-	Name            string
-	Lat             float64
-	Lon             float64
-	OptimalHumidity float64
-	UserID          uint
-	PumpControllers []PumpController
+	ID     uint
+	Name   string
+	UserID uint    // owner
+	Users  []*User `gorm:"many2many:user_installations;"` // managing users
 }
 
-// Create or update Installation
-func (installation Installation) Save(db *gorm.DB) error {
-	return db.Save(&installation).Error
+// Create Installation owned by User with userId
+func (installation Installation) Save(db *gorm.DB, userId uint) error {
+	return db.Create(&installation).Association("Users").Append(&User{ID: userId})
 }
 
-// Get Installation with its PumpControllers by InstallationID
+// Add User to Installation
+func (installation *Installation) AddUser(db *gorm.DB, userId uint) error {
+	return db.Model(installation).Association("Users").Append(&User{ID: userId})
+}
+
+// Remove User from Installation
+func (installation *Installation) RemoveUser(db *gorm.DB, userId uint) error {
+	return db.Model(installation).Association("Users").Delete(&User{ID: userId})
+}
+
+// Get by InstallationID
 func (installation *Installation) GetByID(db *gorm.DB, installationId uint) error {
-	return db.Model(&Installation{}).Preload("PumpControllers").Find(installation).Error
+	return db.Model(&Installation{}).Where("id == ?", installationId).First(installation).Error
 }

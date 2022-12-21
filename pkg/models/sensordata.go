@@ -11,8 +11,8 @@ type SensorData struct {
 	SoilHumidity              float64
 	Temperature               float64
 	LightIntesity             float64
-	CreatedAt                 time.Time     `gorm:"index:idx_member,priority:1"`
-	DataCollectorSerialNumber string        `gorm:"index:idx_member,priority:2"`
+	CreatedAt                 time.Time     `gorm:"index:,composite:index,priority:2"`
+	DataCollectorSerialNumber string        `gorm:"index:,composite:index,priority:1"`
 	DataCollector             DataCollector `gorm:"foreignKey:DataCollectorSerialNumber;references:SerialNumber"`
 }
 
